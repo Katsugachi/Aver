@@ -1,5 +1,5 @@
 # Aver
-
+Open Source powerful transcription tool. <br>
 A lightweight, browser-based audio and video transcription tool. Upload files, record directly from your microphone, or paste links to transcribe media into editable text.
 
 ## Features
