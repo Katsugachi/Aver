@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aver</title>
+<script src="https://js.puter.com/v2/"></script>
 <style>
 :root{
   color-scheme: dark;
@@ -667,6 +668,8 @@ audio.player-audio-el{ display:none; }
   border-color:var(--accent);
   color:var(--accent);
 }
+.toggle-chip:disabled{ opacity:0.4; cursor:not-allowed; }
+.toggle-chip.spinning svg:first-child{ animation:spin 0.9s linear infinite; }
 .toggle-chip svg{ width:12px; height:12px; }
 
 .transcript-card{
@@ -848,6 +851,46 @@ audio.player-audio-el{ display:none; }
   from{ opacity:0; transform:translateY(6px); }
   to{ opacity:1; transform:translateY(0); }
 }
+
+/* toolbar divider */
+.toolbar-divider{
+  width:1px;
+  height:16px;
+  background:var(--border);
+  margin:0 2px;
+  flex-shrink:0;
+}
+
+/* translate dropdown — opens downward from toolbar */
+.translate-wrap{ position:relative; }
+.translate-dropdown{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  z-index:50;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);
+  padding:6px;
+  display:none;
+  flex-direction:column;
+  gap:2px;
+  min-width:180px;
+  max-height:280px;
+  overflow-y:auto;
+}
+.translate-dropdown.open{ display:flex; }
+.translate-opt{
+  padding:7px 10px;
+  border-radius:5px;
+  font-size:12.5px;
+  color:var(--text-dim);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.translate-opt:hover{ background:var(--raised); color:var(--text); }
+
 </style>
 </head>
 <body>
@@ -970,6 +1013,51 @@ audio.player-audio-el{ display:none; }
               <button class="toggle-chip" id="followPlaybackChip" title="Scroll the script to follow playback">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M5 12L10 17L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Follow playback
+              </button>
+              <div class="toolbar-divider"></div>
+              <button class="toggle-chip" id="fixFormattingBtn" title="Fix grammar, formatting, and incorrect words with AI">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Fix formatting
+              </button>
+              <div class="translate-wrap" id="translateWrap">
+                <button class="toggle-chip" id="translateBtn" title="Translate transcript to another language">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Translate
+                  <svg viewBox="0 0 24 24" fill="none" style="width:10px;height:10px;margin-left:-2px;"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="translate-dropdown" id="translateDropdown">
+                  <div class="translate-opt" data-lang="Spanish">🇪🇸 Spanish</div>
+                  <div class="translate-opt" data-lang="French">🇫🇷 French</div>
+                  <div class="translate-opt" data-lang="German">🇩🇪 German</div>
+                  <div class="translate-opt" data-lang="Italian">🇮🇹 Italian</div>
+                  <div class="translate-opt" data-lang="Portuguese">🇵🇹 Portuguese</div>
+                  <div class="translate-opt" data-lang="Japanese">🇯🇵 Japanese</div>
+                  <div class="translate-opt" data-lang="Chinese (Simplified)">🇨🇳 Chinese (Simplified)</div>
+                  <div class="translate-opt" data-lang="Korean">🇰🇷 Korean</div>
+                  <div class="translate-opt" data-lang="Arabic">🇸🇦 Arabic</div>
+                  <div class="translate-opt" data-lang="Russian">🇷🇺 Russian</div>
+                  <div class="translate-opt" data-lang="Hindi">🇮🇳 Hindi</div>
+                  <div class="translate-opt" data-lang="Dutch">🇳🇱 Dutch</div>
+                  <div class="translate-opt" data-lang="Polish">🇵🇱 Polish</div>
+                  <div class="translate-opt" data-lang="Turkish">🇹🇷 Turkish</div>
+                  <div class="translate-opt" data-lang="Swedish">🇸🇪 Swedish</div>
+                  <div class="translate-opt" data-lang="Danish">🇩🇰 Danish</div>
+                  <div class="translate-opt" data-lang="Norwegian">🇳🇴 Norwegian</div>
+                  <div class="translate-opt" data-lang="Finnish">🇫🇮 Finnish</div>
+                  <div class="translate-opt" data-lang="Greek">🇬🇷 Greek</div>
+                  <div class="translate-opt" data-lang="Indonesian">🇮🇩 Indonesian</div>
+                  <div class="translate-opt" data-lang="Thai">🇹🇭 Thai</div>
+                  <div class="translate-opt" data-lang="Vietnamese">🇻🇳 Vietnamese</div>
+                  <div class="translate-opt" data-lang="Ukrainian">🇺🇦 Ukrainian</div>
+                </div>
+              </div>
+              <button class="toggle-chip" id="untranslateBtn" title="Restore original transcript" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 10h10a8 8 0 010 16H3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 10l4-4M3 10l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Untranslate
+              </button>
+              <button class="toggle-chip" id="summaryBtn" title="Replace transcript with a summary">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Summary
               </button>
             </div>
             <div class="transcript-card">
@@ -1335,6 +1423,10 @@ function openProject(id) {
   renderTranscript(p);
 
   micLiveSlot.innerHTML = "";
+
+  // Update AI toolbar state for this project (e.g. saved summary badge)
+  // checkExistingSummary is defined later in the AI features section
+  if (typeof checkExistingSummary === "function") checkExistingSummary(p);
 }
 
 projectTitleInput.addEventListener("input", async () => {
@@ -2032,7 +2124,17 @@ function highlightActiveSegment(currentTime) {
     }
   }
   if (activeEl && state.followPlayback) {
-    activeEl.scrollIntoView({ block: "center", behavior: "smooth" });
+    const scroller = document.querySelector(".main-content");
+    if (scroller) {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      // Only scroll if the active segment is below the visible area — never force upward
+      if (elRect.bottom > scrollerRect.bottom - 40) {
+        activeEl.scrollIntoView({ block: "end", behavior: "smooth" });
+      }
+    } else {
+      activeEl.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
   }
 }
 
@@ -2347,6 +2449,369 @@ async function boot() {
   ["pointerdown", "keydown"].forEach((evt) =>
     window.addEventListener(evt, warmupModel, { once: true })
   );
+}
+
+// ============================================================================
+// AI FEATURES — powered by Puter.js (claude-haiku-4-5)
+// ============================================================================
+
+const fixFormattingBtn  = $("#fixFormattingBtn");
+const translateBtn      = $("#translateBtn");
+const translateDropdown = $("#translateDropdown");
+const translateWrap     = $("#translateWrap");
+const untranslateBtn    = $("#untranslateBtn");
+const summaryBtn        = $("#summaryBtn");
+
+// Check if Puter.js is available
+function puterAvailable() {
+  return typeof puter !== "undefined" && puter && puter.ai;
+}
+
+// Is the media player currently playing?
+function isMediaPlaying() {
+  return currentMediaEl && !currentMediaEl.paused;
+}
+
+// Set button loading state (works on toggle-chip)
+function setAiLoading(btn, loading, originalHtml) {
+  btn.disabled = loading;
+  if (loading) {
+    btn.classList.add("spinning");
+  } else {
+    btn.classList.remove("spinning");
+    if (originalHtml) btn.innerHTML = originalHtml;
+  }
+}
+
+// Get current transcript text
+function getTranscriptText() {
+  return transcriptEditor.innerText || "";
+}
+
+// localStorage helpers — store snapshots keyed by project id
+function lsKey(projectId, kind) {
+  return `aver:${kind}:${projectId}`;
+}
+function lsSave(projectId, kind, data) {
+  try { localStorage.setItem(lsKey(projectId, kind), JSON.stringify(data)); } catch(e) {}
+}
+function lsLoad(projectId, kind) {
+  try { const raw = localStorage.getItem(lsKey(projectId, kind)); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+}
+function lsRemove(projectId, kind) {
+  try { localStorage.removeItem(lsKey(projectId, kind)); } catch(e) {}
+}
+
+// Apply text back to editor, preserving segment timing where possible
+function applyTextToEditor(text, p) {
+  if (p && p.segments && p.segments.length) {
+    const lines = text.split(/\n+/).filter(Boolean);
+    const segCount = p.segments.length;
+    const linesPerSeg = Math.ceil(lines.length / segCount);
+    let htmlOut = "", textOut = "";
+    lines.forEach((line, i) => {
+      const segIdx = Math.min(Math.floor(i / Math.max(1, linesPerSeg)), segCount - 1);
+      const seg = p.segments[segIdx];
+      const start = seg ? seg.start : 0;
+      const end   = seg ? seg.end   : 0;
+      htmlOut += `<div class="seg-line"><span class="seg" data-start="${start.toFixed(2)}" data-end="${end.toFixed(2)}">${escapeHTML(line)}</span></div>`;
+      textOut += (textOut ? "\n" : "") + line;
+    });
+    p.transcriptHTML = htmlOut;
+    p.transcriptText = textOut;
+  } else {
+    const escaped = text.split(/\n/).map(l => `<div>${escapeHTML(l) || "<br>"}</div>`).join("");
+    if (p) { p.transcriptHTML = escaped; p.transcriptText = text; }
+    transcriptEditor.innerHTML = escaped;
+  }
+  if (p) { p.userEdited = true; renderTranscript(p); saveProject(p); }
+}
+
+// Apply a raw HTML+text snapshot directly (used for restoring)
+function applySnapshotToEditor(snapshot, p) {
+  if (!snapshot) return;
+  if (p) {
+    p.transcriptHTML = snapshot.html;
+    p.transcriptText = snapshot.text;
+    p.userEdited = snapshot.userEdited || false;
+    renderTranscript(p);
+    saveProject(p);
+  }
+}
+
+// Capture the current editor state as a restorable snapshot
+function captureSnapshot(p) {
+  return {
+    html: p ? p.transcriptHTML : transcriptEditor.innerHTML,
+    text: p ? p.transcriptText : transcriptEditor.innerText,
+    userEdited: p ? p.userEdited : false,
+  };
+}
+
+// ============================================================================
+// Translate state — tracks whether a translation is currently active
+// ============================================================================
+function isTranslated(p) {
+  return p && !!lsLoad(p.id, "pretranslate");
+}
+
+function updateTranslateUI(p) {
+  const translated = isTranslated(p);
+  // Show Untranslate only when a translation is active
+  untranslateBtn.style.display = translated ? "" : "none";
+  translateBtn.classList.toggle("on", translated);
+}
+
+// ---- Fix Formatting ----
+const fixFormattingOriginalHtml = fixFormattingBtn.innerHTML;
+
+fixFormattingBtn.addEventListener("click", async () => {
+  if (isMediaPlaying()) { toast("Stop the video first, then try again."); return; }
+  if (!puterAvailable()) { toast("Puter.js is not loaded. Check your internet connection.", { error: true }); return; }
+  const text = getTranscriptText().trim();
+  if (!text) { toast("No transcript text to fix.", { error: true }); return; }
+  const p = getActiveProject();
+
+  setAiLoading(fixFormattingBtn, true, null);
+  fixFormattingBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity="0.22"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Fixing…`;
+
+  try {
+    const prompt = `You are a professional transcript editor. Fix the following transcript for:
+- Grammar and punctuation errors
+- Incorrect or misspelled words (use context to infer the correct word)
+- Capitalization issues
+- Run-on sentences or missing sentence breaks
+- Awkward phrasing from speech-to-text errors
+
+Preserve the meaning and speaker's voice. Do not add new content. Output ONLY the corrected transcript text, preserving paragraph/line breaks.
+
+TRANSCRIPT:
+${text}`;
+
+    const response = await puter.ai.chat(prompt, { model: "claude-haiku-4-5" });
+    const fixed = response?.message?.content?.[0]?.text || response?.text || "";
+    if (!fixed.trim()) { toast("AI returned an empty response. Try again.", { error: true }); return; }
+    applyTextToEditor(fixed.trim(), p);
+    toast("Formatting fixed by Haiku 4.5");
+  } catch (err) {
+    console.error("Fix formatting error:", err);
+    toast("Fix formatting failed: " + (err.message || "Unknown error"), { error: true });
+  } finally {
+    setAiLoading(fixFormattingBtn, false, fixFormattingOriginalHtml);
+  }
+});
+
+// ---- Translate ----
+translateBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  translateDropdown.classList.toggle("open");
+});
+document.addEventListener("click", (e) => {
+  if (!translateWrap.contains(e.target)) translateDropdown.classList.remove("open");
+});
+
+const translateOriginalHtml = translateBtn.innerHTML;
+
+translateDropdown.addEventListener("click", async (e) => {
+  const opt = e.target.closest(".translate-opt");
+  if (!opt) return;
+  const lang = opt.dataset.lang;
+  translateDropdown.classList.remove("open");
+
+  if (isMediaPlaying()) { toast("Stop the video first, then try again."); return; }
+  if (!puterAvailable()) { toast("Puter.js is not loaded. Check your internet connection.", { error: true }); return; }
+  const text = getTranscriptText().trim();
+  if (!text) { toast("No transcript text to translate.", { error: true }); return; }
+  const p = getActiveProject();
+
+  // If already translated, clear old snapshot first so the new translation
+  // captures the current (already-translated or re-edited) state as the new base
+  // — actually we always save the CURRENT state before translating
+  const snapshot = captureSnapshot(p);
+
+  setAiLoading(translateBtn, true, null);
+  translateBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity="0.22"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${lang}…`;
+
+  try {
+    const prompt = `Translate the following transcript to ${lang}. Preserve paragraph and line breaks exactly. Output ONLY the translated text with no explanation, preamble, or commentary.
+
+TRANSCRIPT:
+${text}`;
+
+    const response = await puter.ai.chat(prompt, { model: "claude-haiku-4-5" });
+    const translated = response?.message?.content?.[0]?.text || response?.text || "";
+    if (!translated.trim()) { toast("AI returned an empty translation. Try again.", { error: true }); return; }
+
+    // Save snapshot BEFORE applying translation
+    if (p) lsSave(p.id, "pretranslate", snapshot);
+
+    applyTextToEditor(translated.trim(), p);
+    updateTranslateUI(p);
+    toast(`Translated to ${lang} — click Untranslate to restore`);
+  } catch (err) {
+    console.error("Translate error:", err);
+    toast("Translation failed: " + (err.message || "Unknown error"), { error: true });
+  } finally {
+    setAiLoading(translateBtn, false, translateOriginalHtml);
+  }
+});
+
+// ---- Untranslate ----
+untranslateBtn.addEventListener("click", () => {
+  if (isMediaPlaying()) { toast("Stop the video first, then try again."); return; }
+  const p = getActiveProject();
+  if (!p) return;
+  const snapshot = lsLoad(p.id, "pretranslate");
+  if (!snapshot) { toast("No original transcript found.", { error: true }); return; }
+
+  applySnapshotToEditor(snapshot, p);
+  lsRemove(p.id, "pretranslate");
+  updateTranslateUI(p);
+  toast("Original transcript restored");
+});
+
+// ============================================================================
+// Summary state — tracks whether the summary is currently showing in the editor
+// localStorage keys:
+//   aver:presummary:{id}  — snapshot of transcript before summary replaced it
+//   aver:summary:{id}     — the cached summary text (persists across unsummarise)
+// ============================================================================
+function isSummarised(p) {
+  return p && !!lsLoad(p.id, "presummary");
+}
+function hasCachedSummary(p) {
+  return p && !!lsLoad(p.id, "summary");
+}
+
+const summaryOriginalHtml = summaryBtn.innerHTML;
+const unsummariseHtml = `<svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Unsummarise`;
+const summaryReturnHtml = `<svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Summary ✓`;
+
+function updateSummaryUI(p) {
+  const summarised    = isSummarised(p);
+  const hasCached     = hasCachedSummary(p);
+  summaryBtn.classList.toggle("on", summarised);
+  if (summarised) {
+    summaryBtn.innerHTML = unsummariseHtml;
+    summaryBtn.title = "Restore full transcript";
+  } else if (hasCached) {
+    summaryBtn.innerHTML = summaryReturnHtml;
+    summaryBtn.title = "Show saved summary (instant)";
+  } else {
+    summaryBtn.innerHTML = summaryOriginalHtml;
+    summaryBtn.title = "Replace transcript with a summary";
+  }
+}
+
+// Apply summary text into the editor (shared between generate and cache-restore paths)
+function applySummaryText(summaryText, p) {
+  const html = summaryText.split("\n").map(l => `<div>${escapeHTML(l) || "<br>"}</div>`).join("");
+  if (p) {
+    p.transcriptHTML = html;
+    p.transcriptText = summaryText;
+    p.userEdited = true;
+    renderTranscript(p);
+    saveProject(p);
+  } else {
+    transcriptEditor.innerHTML = html;
+  }
+}
+
+summaryBtn.addEventListener("click", async () => {
+  if (isMediaPlaying()) { toast("Stop the video first, then try again."); return; }
+  const p = getActiveProject();
+
+  // ---- Unsummarise: restore original transcript ----
+  if (isSummarised(p)) {
+    const snapshot = lsLoad(p.id, "presummary");
+    if (!snapshot) { toast("No original transcript found.", { error: true }); return; }
+    applySnapshotToEditor(snapshot, p);
+    lsRemove(p.id, "presummary");
+    // Keep "summary" cache — don't delete it so next press is instant
+    updateSummaryUI(p);
+    toast("Full transcript restored");
+    return;
+  }
+
+  // ---- Summarise: use cache if available, otherwise generate ----
+  const cached = p ? lsLoad(p.id, "summary") : null;
+  if (cached) {
+    // Instant restore from cache — no API call needed
+    const snapshot = captureSnapshot(p);
+    if (p) lsSave(p.id, "presummary", snapshot);
+    applySummaryText(cached, p);
+    transcriptEditor.contentEditable = "true";
+    updateSummaryUI(p);
+    toast("Summary restored from cache");
+    return;
+  }
+
+  // ---- Generate fresh summary ----
+  if (!puterAvailable()) { toast("Puter.js is not loaded. Check your internet connection.", { error: true }); return; }
+  const text = getTranscriptText().trim();
+  if (!text) { toast("No transcript text to summarise.", { error: true }); return; }
+
+  const snapshot = captureSnapshot(p);
+  const prevHtml = transcriptEditor.innerHTML;
+  transcriptEditor.contentEditable = "false";
+  transcriptEditor.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;color:var(--text-faint);font-size:13px;"><svg class="spinner" viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;flex-shrink:0;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity="0.22"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Generating summary…</div>`;
+
+  setAiLoading(summaryBtn, true, null);
+  summaryBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity="0.22"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Summarising…`;
+
+  try {
+    const prompt = `Write a clear, concise summary of the following transcript. Include:
+- A 1–2 sentence overview of the main topic
+- Key points discussed (use bullet points)
+- Any notable conclusions or action items
+
+Keep the summary professional and under 250 words. Output only the summary, no preamble.
+
+TRANSCRIPT:
+${text}`;
+
+    let streamedText = "";
+    transcriptEditor.innerHTML = "";
+
+    const response = await puter.ai.chat(prompt, { model: "claude-haiku-4-5", stream: true });
+    for await (const part of response) {
+      const chunk = part?.text || "";
+      streamedText += chunk;
+      transcriptEditor.textContent = streamedText;
+    }
+
+    const summaryText = streamedText.trim();
+    if (!summaryText) {
+      transcriptEditor.innerHTML = prevHtml;
+      transcriptEditor.contentEditable = "true";
+      toast("AI returned an empty summary. Try again.", { error: true });
+      return;
+    }
+
+    // Save snapshot (to restore from) and the summary text (to re-show instantly later)
+    if (p) {
+      lsSave(p.id, "presummary", snapshot);
+      lsSave(p.id, "summary", summaryText);
+    }
+
+    applySummaryText(summaryText, p);
+    transcriptEditor.contentEditable = "true";
+    updateSummaryUI(p);
+    toast("Summary shown — click Unsummarise to restore");
+  } catch (err) {
+    console.error("Summary error:", err);
+    transcriptEditor.innerHTML = prevHtml;
+    transcriptEditor.contentEditable = "true";
+    toast("Summary failed: " + (err.message || "Unknown error"), { error: true });
+  } finally {
+    setAiLoading(summaryBtn, false, null);
+  }
+});
+
+// Sync toolbar buttons when switching projects
+function checkExistingSummary(p) {
+  updateSummaryUI(p);
+  updateTranslateUI(p);
 }
 
 boot();
